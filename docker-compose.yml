@@ -1,7 +1,13 @@
 services:
   server:
     build: .
-    command: ["/server", "-leak=read", "-conn-bytes=65536"]
+    command:
+      - /server
+      - -leak=${LEAK:-read}
+      - -fix=${FIX:-false}
+      - -conn-bytes=65536
+      - -idle-timeout=5s
+      - -metrics-path=/metrics/${LEAK:-read}-${FIX:-false}.csv
     mem_limit: 256m
     memswap_limit: 256m        # same as mem_limit = no swap, dies instead of hanging
     ulimits:
@@ -12,7 +18,11 @@ services:
 
   loadgen:
     build: .
-    command: ["/loadgen", "-addr=server:9000", "-rate=50"]
+    command:
+      - /loadgen
+      - -addr=server:9000
+      - -mode=${MODE:-silent}
+      - -rate=50
     ulimits:
       nofile: 1048576
     depends_on: [server]
